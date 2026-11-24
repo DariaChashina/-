@@ -1,0 +1,555 @@
+ЛАБ 1
+
+USE hoteldb;
+
+CREATE TABLE tariff (
+    tariff_id INT PRIMARY KEY AUTO_INCREMENT,
+    tariff_name VARCHAR(50) NOT NULL,
+    price_per_night DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE room_category (
+    category_id INT PRIMARY KEY AUTO_INCREMENT,
+    category_name VARCHAR(60) NOT NULL
+);
+
+CREATE TABLE room_status (
+    room_status_id INT PRIMARY KEY AUTO_INCREMENT,
+    status_name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE equipment (
+    equipment_id INT PRIMARY KEY AUTO_INCREMENT,
+    equipment_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE guest (
+    guest_id INT PRIMARY KEY AUTO_INCREMENT,
+    full_name VARCHAR(150) NOT NULL,
+    birth_date DATE,
+    citizenship VARCHAR(60),
+    id_document VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100)
+);
+
+CREATE TABLE booking_source (
+    source_id INT PRIMARY KEY AUTO_INCREMENT,
+    source_name VARCHAR(60) NOT NULL
+);
+
+CREATE TABLE booking_status (
+    booking_status_id INT PRIMARY KEY AUTO_INCREMENT,
+    status_name VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE room (
+    room_id INT PRIMARY KEY AUTO_INCREMENT,
+    tariff_id INT NOT NULL,
+    category_id INT NOT NULL,
+    room_status_id INT NOT NULL,
+    room_name VARCHAR(50),
+    rooms_count INT DEFAULT 1,
+    area DECIMAL(5,1),
+    floor INT,
+    building_number INT,
+    FOREIGN KEY (tariff_id) REFERENCES tariff(tariff_id),
+    FOREIGN KEY (category_id) REFERENCES room_category(category_id),
+    FOREIGN KEY (room_status_id) REFERENCES room_status(room_status_id)
+);
+
+CREATE TABLE room_equipment (
+    room_id INT,
+    equipment_id INT,
+    PRIMARY KEY (room_id, equipment_id),
+    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE,
+    FOREIGN KEY (equipment_id) REFERENCES equipment(equipment_id) ON DELETE CASCADE
+);
+
+CREATE TABLE booking (
+    booking_id INT PRIMARY KEY AUTO_INCREMENT,
+    guest_id INT NOT NULL,
+    category_id INT NOT NULL,
+    source_id INT NOT NULL,
+    booking_status_id INT NOT NULL,
+    check_in_planned DATETIME NOT NULL,
+    check_out_planned DATETIME NOT NULL,
+    guests_count INT DEFAULT 1,
+    special_requests VARCHAR(255),
+    FOREIGN KEY (guest_id) REFERENCES guest(guest_id),
+    FOREIGN KEY (category_id) REFERENCES room_category(category_id),
+    FOREIGN KEY (source_id) REFERENCES booking_source(source_id),
+    FOREIGN KEY (booking_status_id) REFERENCES booking_status(booking_status_id)
+);
+
+CREATE TABLE stay (
+    stay_id INT PRIMARY KEY AUTO_INCREMENT,
+    booking_id INT NOT NULL,
+    room_id INT NOT NULL,
+    check_in_actual DATETIME,
+    check_out_actual DATETIME,
+    FOREIGN KEY (booking_id) REFERENCES booking(booking_id),
+    FOREIGN KEY (room_id) REFERENCES room(room_id)
+);
+
+
+
+ALTER TABLE guest ADD admin_notes TEXT;
+ALTER TABLE booking MODIFY COLUMN special_requests TEXT;
+
+
+INSERT INTO tariff (tariff_id, tariff_name, price_per_night) VALUES 
+(1, 'Базовый', 2500), (2, 'Комфорт', 4200), (3, 'Премиум', 7500), (4, 'Сюит', 12000);
+
+INSERT INTO room_category (category_id, category_name) VALUES 
+(1, 'Высшая категория'), (2, 'Первая категория'), (3, 'Вторая категория');
+
+INSERT INTO room_status (room_status_id, status_name) VALUES 
+(1, 'Доступен'), (2, 'Занят'), (3, 'На уборке'), (4, 'Требует ремонта');
+
+INSERT INTO equipment (equipment_id, equipment_name) VALUES 
+(1, 'Кондиционер'), (2, 'Телевизор'), (3, 'Мини-бар'), (4, 'Сейф'), (5, 'Фен');
+
+INSERT INTO booking_source (source_id, source_name) VALUES 
+(1, 'Телефон'), (2, 'Сайт'), (3, 'Туристическое агентство'), (4, 'Система онлайн-бронирования');
+
+INSERT INTO booking_status (booking_status_id, status_name) VALUES 
+(1, 'Предварительное'), (2, 'Подтверждённое'), (3, 'Отменённое'), (4, 'Заселён');
+
+INSERT INTO guest (guest_id, full_name, birth_date, citizenship, id_document, phone, email, admin_notes) VALUES 
+(1, 'Соколов Артём Игоревич', '1992-03-14', 'Россия', 'Паспорт РФ 5712 384105', '+7 912 555-01-01', 'sokolov.a@example.com', NULL),
+(2, 'Нурланова Айгуль Серикбаевна', '1988-07-02', 'Казахстан', 'Паспорт N 04827193', '+7 701 555-02-02', 'nurlanova.a@example.com', NULL),
+(3, 'Кравцова Мария Олеговна', '1995-11-25', 'Россия', 'Паспорт РФ 5714 902276', '+7 922 555-03-03', 'kravtsova.m@example.com', NULL),
+(4, 'Белов Дмитрий Андреевич', '1980-01-30', 'Россия', 'Паспорт РФ 5708 117342', '+7 904 555-04-04', 'belov.d@example.com', NULL),
+(5, 'Ковалёв Игорь Петрович', '1975-09-09', 'Беларусь', 'Паспорт MC 3920184', '+7 951 555-05-05', 'kovalev.i@example.com', NULL),
+(6, 'Фролова Анна Викторовна', '1999-05-18', 'Россия', 'Паспорт РФ 5719 640018', '+7 963 555-06-06', 'frolova.a@example.com', NULL),
+(7, 'Рахимов Тимур Алишерович', '1990-12-03', 'Узбекистан', 'Паспорт AB 7714305', '+7 977 555-07-07', 'rakhimov.t@example.com', NULL),
+(8, 'Орлова Светлана Николаевна', '1984-04-21', 'Россия', 'Паспорт РФ 5710 275531', '+7 982 555-08-08', 'orlova.s@example.com', NULL),
+(9, 'Громов Павел Сергеевич', '1993-08-14', 'Россия', 'Паспорт РФ 5716 508824', '+7 908 555-09-09', 'gromov.p@example.com', NULL),
+(10, 'Исмаилова Лейла Рашидовна', '1987-02-27', 'Казахстан', 'Паспорт N 05119462', '+7 705 555-10-10', 'ismailova.l@example.com', NULL);
+
+INSERT INTO room (room_id, tariff_id, category_id, room_status_id, room_name, rooms_count, area, floor, building_number) VALUES 
+(1, 1, 2, 1, 'Стандарт', 1, 16, 1, 1),
+(2, 1, 2, 2, 'Стандарт', 1, 16.5, 1, 1),
+(3, 2, 2, 1, 'Стандарт', 1, 18.5, 2, 1),
+(4, 2, 2, 1, 'Стандарт', 1, 19, 2, 1),
+(5, 2, 1, 4, 'Студия', 1, 24, 3, 1),
+(6, 3, 1, 2, 'Люкс', 2, 42, 5, 1),
+(7, 3, 1, 1, 'Люкс', 2, 44, 5, 1),
+(8, 3, 1, 1, 'Джуниор сюит', 2, 38, 6, 2),
+(9, 4, 1, 1, 'Апартамент', 3, 65, 7, 2),
+(10, 4, 1, 3, 'Апартамент', 3, 70, 7, 2);
+
+
+INSERT INTO room_equipment (room_id, equipment_id) VALUES 
+(1, 2), (1, 5), (2, 2), (2, 5), (3, 1), (3, 2), (3, 5), (4, 1), (4, 2), (4, 5),
+(5, 1), (5, 2), (5, 5), (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (7, 1), (7, 2),
+(7, 3), (7, 4), (7, 5), (8, 1), (8, 2), (8, 3), (8, 5), (9, 1), (9, 2), (9, 3),
+(9, 4), (9, 5), (10, 1), (10, 2), (10, 3), (10, 4), (10, 5);
+
+
+INSERT INTO booking (booking_id, guest_id, category_id, source_id, booking_status_id, check_in_planned, check_out_planned, guests_count, special_requests) VALUES 
+(1, 1, 2, 2, 4, '2026-10-05 14:00:00', '2026-10-08 12:00:00', 2, 'Номер для некурящих'),
+(2, 2, 1, 3, 4, '2026-10-06 14:00:00', '2026-10-10 12:00:00', 3, 'Детская кроватка'),
+(3, 3, 2, 4, 4, '2026-10-08 14:00:00', '2026-10-09 12:00:00', 1, NULL),
+(4, 4, 1, 1, 4, '2026-10-10 14:00:00', '2026-10-13 12:00:00', 2, 'Высокий этаж'),
+(5, 5, 1, 3, 4, '2026-10-12 14:00:00', '2026-10-15 12:00:00', 4, 'Номера рядом'),
+(6, 6, 2, 2, 4, '2026-10-14 14:00:00', '2026-10-16 12:00:00', 2, NULL),
+(7, 7, 1, 4, 4, '2026-10-16 14:00:00', '2026-10-19 12:00:00', 2, NULL),
+(8, 8, 1, 2, 4, '2026-10-17 14:00:00', '2026-10-21 12:00:00', 1, 'Номер для некурящих'),
+(9, 9, 2, 1, 4, '2026-10-18 14:00:00', '2026-10-20 12:00:00', 2, NULL),
+(10, 10, 1, 3, 2, '2026-11-02 14:00:00', '2026-11-06 12:00:00', 2, 'Детская кроватка'),
+(11, 1, 2, 1, 1, '2026-11-20 14:00:00', '2026-11-23 12:00:00', 1, 'Высокий этаж'),
+(12, 3, 1, 2, 3, '2026-10-25 14:00:00', '2026-10-27 12:00:00', 2, NULL);
+
+INSERT INTO stay (stay_id, booking_id, room_id, check_in_actual, check_out_actual) VALUES 
+(1, 1, 3, '2026-10-05 14:20:00', '2026-10-08 11:30:00'),
+(2, 2, 9, '2026-10-06 15:05:00', '2026-10-10 11:45:00'),
+(3, 3, 1, '2026-10-08 14:10:00', '2026-10-09 11:30:00'),
+(4, 4, 6, '2026-10-10 14:40:00', '2026-10-13 12:00:00'),
+(5, 5, 7, '2026-10-12 14:00:00', '2026-10-15 11:50:00'),
+(6, 5, 8, '2026-10-12 14:05:00', '2026-10-15 11:50:00'),
+(7, 6, 4, '2026-10-14 16:00:00', '2026-10-16 11:20:00'),
+(8, 7, 10, '2026-10-16 14:30:00', '2026-10-19 11:55:00'),
+(9, 8, 6, '2026-10-17 15:00:00', NULL),
+(10, 9, 2, '2026-10-18 14:15:00', NULL);
+
+UPDATE room SET room_status_id = 3 WHERE room_id = 2;
+UPDATE guest SET phone = '+7 912 000-00-00' WHERE guest_id = 1;
+DELETE FROM booking WHERE booking_id = 12;
+
+DROP USER IF EXISTS 'receptionist'@'localhost';
+CREATE USER 'receptionist'@'localhost' IDENTIFIED BY 'SecurePass123!';
+GRANT SELECT, INSERT, UPDATE ON hoteldb.guest TO 'receptionist'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON hoteldb.booking TO 'receptionist'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON hoteldb.stay TO 'receptionist'@'localhost';
+GRANT SELECT ON hoteldb.room TO 'receptionist'@'localhost';
+GRANT SELECT ON hoteldb.room_category TO 'receptionist'@'localhost';
+
+DESCRIBE tariff;
+DESCRIBE room_category;
+DESCRIBE room_status;
+DESCRIBE room;
+DESCRIBE equipment;
+DESCRIBE room_equipment;
+DESCRIBE guest;
+DESCRIBE booking_source;
+DESCRIBE booking_status;
+DESCRIBE booking;
+DESCRIBE stay;
+
+
+
+
+ЛАБ 2
+
+SELECT g.full_name, b.check_in_planned, bs.status_name
+FROM guest g, booking b, booking_status bs
+WHERE g.guest_id = b.guest_id 
+  AND b.booking_status_id = bs.booking_status_id 
+  AND bs.status_name = 'Предварительное'
+ORDER BY b.check_in_planned ASC;
+
+SELECT r.room_name, rc.category_name, t.tariff_name, t.price_per_night
+FROM room r, room_category rc, tariff t
+WHERE r.category_id = rc.category_id 
+  AND r.tariff_id = t.tariff_id
+  AND t.price_per_night > 4000
+ORDER BY t.price_per_night DESC;
+
+SELECT g.full_name, b.guests_count, s.source_name
+FROM guest g, booking b, booking_source s
+WHERE g.guest_id = b.guest_id 
+  AND b.source_id = s.source_id
+  AND s.source_name = 'Сайт'
+ORDER BY b.guests_count DESC;
+
+SELECT g.full_name, g.email, g.citizenship
+FROM guest g, booking b
+WHERE g.guest_id = b.guest_id 
+  AND g.citizenship = 'Россия'
+ORDER BY g.full_name ASC;
+
+SELECT r.room_name, rs.status_name, r.floor
+FROM room r, room_status rs
+WHERE r.room_status_id = rs.room_status_id
+  AND rs.status_name = 'Доступен'
+  AND r.floor = 5
+ORDER BY r.room_name ASC;
+
+
+SELECT r.room_name, e.equipment_name
+FROM room r
+JOIN room_equipment re ON r.room_id = re.room_id
+JOIN equipment e ON re.equipment_id = e.equipment_id
+ORDER BY r.room_name;
+
+SELECT g.full_name, r.room_name, s.check_in_actual
+FROM stay s
+LEFT JOIN booking b ON s.booking_id = b.booking_id
+LEFT JOIN guest g ON b.guest_id = g.guest_id
+LEFT JOIN room r ON s.room_id = r.room_id;
+
+SELECT b.booking_id, rc.category_name, bs.status_name, b.check_in_planned
+FROM booking b
+JOIN room_category rc ON b.category_id = rc.category_id
+JOIN booking_status bs ON b.booking_status_id = bs.booking_status_id;
+
+SELECT g.full_name, r.room_name, s.check_in_actual
+FROM stay s
+JOIN booking b ON s.booking_id = b.booking_id
+JOIN guest g ON b.guest_id = g.guest_id
+JOIN room r ON s.room_id = r.room_id
+WHERE s.check_out_actual IS NULL;
+
+SELECT b.booking_id, g.full_name, rc.category_name, src.source_name
+FROM booking b
+JOIN guest g ON b.guest_id = g.guest_id
+JOIN room_category rc ON b.category_id = rc.category_id
+JOIN booking_source src ON b.source_id = src.source_id;
+
+SELECT 
+    COUNT(tariff_id) AS total_tariffs,
+    SUM(price_per_night) AS total_sum,
+    AVG(price_per_night) AS average_price,
+    MAX(price_per_night) AS max_price,
+    MIN(price_per_night) AS min_price
+FROM tariff;
+
+SELECT 
+    COUNT(*) AS total_bookings,
+    COUNT(special_requests) AS bookings_with_requests
+FROM booking;
+
+SELECT 
+    AVG(area) AS avg_area,
+    MAX(area) AS max_area,
+    MIN(area) AS min_area
+FROM room;
+
+SELECT SUM(guests_count) AS total_guests_booked
+FROM booking;
+
+SELECT 
+    SUM(rooms_count) AS total_rooms,
+    AVG(rooms_count) AS avg_rooms,
+    MAX(rooms_count) AS max_rooms
+FROM room;
+
+SELECT bs.status_name, COUNT(b.booking_id) AS booking_count
+FROM booking b
+JOIN booking_status bs ON b.booking_status_id = bs.booking_status_id
+GROUP BY bs.status_name
+HAVING COUNT(b.booking_id) > 2;
+
+SELECT rc.category_name, COUNT(r.room_id) AS room_count
+FROM room r
+JOIN room_category rc ON r.category_id = rc.category_id
+GROUP BY rc.category_name
+HAVING COUNT(r.room_id) > 3;
+
+SELECT floor, AVG(area) AS avg_area
+FROM room
+GROUP BY floor
+HAVING AVG(area) > 30;
+
+SELECT citizenship, COUNT(guest_id) AS guest_count
+FROM guest
+GROUP BY citizenship
+HAVING COUNT(guest_id) > 1;
+
+SELECT s.source_name, COUNT(b.booking_id) AS booking_count
+FROM booking b
+JOIN booking_source s ON b.source_id = s.source_id
+GROUP BY s.source_name
+HAVING COUNT(b.booking_id) > 1;
+
+SELECT full_name 
+FROM guest 
+WHERE guest_id IN (
+    SELECT guest_id FROM booking WHERE booking_status_id = 3
+);
+
+SELECT room_id, room_name, area 
+FROM room 
+WHERE area > ALL (
+    SELECT area FROM room WHERE floor = 1
+);
+
+SELECT 
+    g.full_name,
+    COUNT(b.booking_id) AS booking_count,
+    CASE 
+        WHEN COUNT(b.booking_id) > 2 THEN 'VIP'
+        WHEN COUNT(b.booking_id) BETWEEN 1 AND 2 THEN 'Обычный'
+        ELSE 'Новый'
+    END AS guest_status
+FROM guest g
+LEFT JOIN booking b ON g.guest_id = b.guest_id
+GROUP BY g.guest_id, g.full_name;
+
+SELECT 
+    booking_id,
+    special_requests,
+    IF(special_requests LIKE '%кроватка%', 'Нужна кроватка', 'Не нужна') AS crib_status
+FROM booking;
+
+SELECT 
+    r.room_name,
+    CASE 
+        WHEN r.room_id IN (SELECT room_id FROM stay) THEN 'Сдавался'
+        ELSE 'Не сдавался'
+    END AS rent_status
+FROM room r;
+
+
+DROP VIEW IF EXISTS view_available_rooms;
+CREATE VIEW view_available_rooms AS
+SELECT r.room_id, r.room_name, rc.category_name, t.price_per_night
+FROM room r
+JOIN room_category rc ON r.category_id = rc.category_id
+JOIN tariff t ON r.tariff_id = t.tariff_id
+WHERE r.room_status_id = 1;
+
+SELECT * FROM view_available_rooms;
+
+DROP VIEW IF EXISTS view_stay_history;
+CREATE VIEW view_stay_history AS
+SELECT g.full_name, r.room_name, s.check_in_actual, s.check_out_actual
+FROM stay s
+JOIN booking b ON s.booking_id = b.booking_id
+JOIN guest g ON b.guest_id = g.guest_id
+JOIN room r ON s.room_id = r.room_id;
+-- Вызов:
+SELECT * FROM view_stay_history;
+
+WITH LuxuryBookings AS (
+    SELECT b.guest_id 
+    FROM booking b
+    JOIN room_category rc ON b.category_id = rc.category_id
+    WHERE rc.category_name = 'Высшая категория'
+)
+SELECT g.full_name, g.email
+FROM guest g
+JOIN LuxuryBookings lb ON g.guest_id = lb.guest_id;
+
+WITH CribBookings AS (
+    SELECT booking_id, guest_id 
+    FROM booking 
+    WHERE special_requests LIKE '%кроватка%'
+)
+SELECT g.full_name, b.booking_id
+FROM guest g
+JOIN CribBookings b ON g.guest_id = b.guest_id;
+
+WITH AvgArea AS (
+    SELECT AVG(area) AS avg_area FROM room
+)
+SELECT room_name, area 
+FROM room, AvgArea
+WHERE room.area > AvgArea.avg_area;
+
+EXPLAIN SELECT * FROM guest WHERE citizenship = 'Россия';
+
+CREATE INDEX idx_citizenship ON guest(citizenship);
+EXPLAIN SELECT * FROM guest WHERE citizenship = 'Россия';
+
+EXPLAIN SELECT * FROM booking WHERE booking_status_id = 4;
+
+CREATE INDEX idx_booking_status ON booking(booking_status_id);
+EXPLAIN SELECT * FROM booking WHERE booking_status_id = 4;
+
+CREATE INDEX idx_check_in ON booking(check_in_planned);
+EXPLAIN SELECT * FROM booking WHERE check_in_planned > '2026-10-01';
+
+START TRANSACTION;
+INSERT INTO stay (booking_id, room_id, check_in_actual) VALUES (10, 5, NOW());
+UPDATE room SET room_status_id = 2 WHERE room_id = 5;
+COMMIT;
+
+START TRANSACTION;
+DELETE FROM booking WHERE booking_id = 11;
+ROLLBACK;
+
+START TRANSACTION;
+UPDATE tariff SET price_per_night = price_per_night * 1.1 WHERE tariff_id = 1;
+COMMIT;
+
+START TRANSACTION;
+UPDATE room SET room_status_id = 4 WHERE room_id = 1;
+ROLLBACK;
+
+START TRANSACTION;
+UPDATE booking SET booking_status_id = 3 WHERE booking_id = 10;
+COMMIT;
+
+
+PREPARE GetGuestsByCitizenship FROM 'SELECT full_name, citizenship FROM guest WHERE citizenship = ?';
+SET @citizenship_val = 'Россия';
+EXECUTE GetGuestsByCitizenship USING @citizenship_val;
+DEALLOCATE PREPARE GetGuestsByCitizenship;
+
+PREPARE GetRoomsByArea FROM 'SELECT room_name, area FROM room WHERE area >= ?';
+SET @min_area = 40;
+EXECUTE GetRoomsByArea USING @min_area;
+DEALLOCATE PREPARE GetRoomsByArea;
+
+PREPARE GetRoomsByFloor FROM 'SELECT room_name, floor FROM room WHERE floor = ?';
+SET @floor_val = 5;
+EXECUTE GetRoomsByFloor USING @floor_val;
+DEALLOCATE PREPARE GetRoomsByFloor;
+
+PREPARE GetBookingsByGuests FROM 'SELECT booking_id, guests_count FROM booking WHERE guests_count >= ?';
+SET @min_guests = 3;
+EXECUTE GetBookingsByGuests USING @min_guests;
+DEALLOCATE PREPARE GetBookingsByGuests;
+
+PREPARE GetRoomsByCategory FROM 'SELECT r.room_name, rc.category_name FROM room r JOIN room_category rc ON r.category_id = rc.category_id WHERE rc.category_name = ?';
+SET @category_val = 'Высшая категория';
+EXECUTE GetRoomsByCategory USING @category_val;
+DEALLOCATE PREPARE GetRoomsByCategory;
+
+
+ЛАБ 3
+
+USE hoteldb;
+
+CREATE TABLE IF NOT EXISTS action_log (
+    log_id INT PRIMARY KEY AUTO_INCREMENT,
+    action_message VARCHAR(255),
+    action_date DATETIME
+);
+
+DELIMITER //
+
+CREATE PROCEDURE GetTariffStats()
+BEGIN
+    SELECT 
+        SUM(price_per_night) AS total_sum,
+        AVG(price_per_night) AS average_price,
+        MAX(price_per_night) AS max_price,
+        MIN(price_per_night) AS min_price
+    FROM tariff;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE AddLogEntry()
+BEGIN
+    INSERT INTO action_log (action_message, action_date) 
+    VALUES ('Выполнен расчет статистики по тарифам', NOW());
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE FUNCTION CountGuestsFromCountry(country_name VARCHAR(60)) 
+RETURNS INT
+DETERMINISTIC
+BEGIN
+
+    DECLARE guest_count INT;   
+ 
+    SELECT COUNT(*) INTO guest_count 
+    FROM guest 
+    WHERE citizenship = country_name;
+    
+    RETURN guest_count;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE FUNCTION CountRoomsOnFloor(floor_num INT) 
+RETURNS INT
+DETERMINISTIC
+BEGIN
+
+    DECLARE room_count INT; 
+
+    SELECT COUNT(*) INTO room_count 
+    FROM room 
+    WHERE floor = floor_num;
+    
+    RETURN room_count;
+END //
+
+DELIMITER ;
+
+USE hoteldb;
+
+CALL GetTariffStats();
+
+CALL AddLogEntry();
+
+SELECT * FROM action_log;
+
+SELECT 
+    CountGuestsFromCountry('Россия') AS guests_from_russia,
+    CountGuestsFromCountry('Казахстан') AS guests_from_kazakhstan,
+    CountRoomsOnFloor(1) AS rooms_on_1st_floor,
+    CountRoomsOnFloor(5) AS rooms_on_5th_floor;
